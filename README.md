@@ -47,3 +47,27 @@ for service in docker_registry.service dnsmasq.service tang.socket; do
   fi
 done
 ```
+last alternative - easier to read and case for reporting
+```
+#!/bin/bash
+
+services=(docker_registry.service dnsmasq.service tang.socket)
+
+for svc in "${services[@]}"; do
+  case "$(systemctl is-failed "$svc")" in
+    failed)
+      echo "$svc failed. Restarting..."
+      systemctl restart "$svc"
+
+      if systemctl is-active --quiet "$svc"; then
+        echo "$svc is now active."
+      else
+        echo "Error: $svc is still not running."
+      fi
+      ;;
+    *)
+      echo "$svc is fine."
+      ;;
+  esac
+done
+```
